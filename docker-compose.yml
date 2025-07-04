@@ -1,0 +1,22 @@
+services:
+
+  backend:
+    build: ./backend
+    expose:
+      - "5000"
+
+  waf:
+    image: owasp/modsecurity-crs:nginx
+    ports:
+      - "8080:8080"
+    environment:
+      BACKEND: "http://backend:5000"
+      BLOCKING_PARANOIA: "1"
+      MODSEC_AUDIT_ENGINE: "On"
+      MODSEC_AUDIT_LOG: "/dev/stdout"
+      MODSEC_AUDIT_LOG_PARTS: "ABIJDEFHZ"
+      MODSEC_AUDIT_LOG_FORMAT: "JSON"
+    volumes:
+      - ./waf/modsec-exclusions.conf:/etc/modsecurity.d/owasp-crs/rules/modsec-exclusions.conf:ro
+    depends_on:
+      - backend
